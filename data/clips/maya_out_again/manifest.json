@@ -1,0 +1,1 @@
+{"id": "maya_out_again", "title": "Camera re-reads Maya", "lane": "exit", "condition": "day", "story": "Duplicate exit read: idempotent, no double charge", "frames": 6, "truth": ["KTR4821"]}

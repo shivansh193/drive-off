@@ -1,6 +1,10 @@
 fast-alpr[onnx]==0.4.0
+opencv-python-headless>=4.10,<5
+numpy
+pillow
 requests
 python-dotenv
-pillow
-opencv-python-headless
-numpy
+fastapi==0.162.2
+uvicorn[standard]
+python-multipart
+tzdata

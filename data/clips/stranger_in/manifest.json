@@ -1,0 +1,1 @@
+{"id": "stranger_in", "title": "Visitor arrives (not enrolled)", "lane": "entry", "condition": "day", "story": "Not enrolled: plate hashed for occupancy, image dropped", "frames": 6, "truth": ["PWN6613"]}

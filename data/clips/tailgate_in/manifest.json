@@ -1,0 +1,1 @@
+{"id": "tailgate_in", "title": "Two cars in one pass", "lane": "entry", "condition": "day", "story": "Tailgating: both vehicles detected and flagged", "frames": 6, "truth": ["HLM2056", "RVC5108"]}
