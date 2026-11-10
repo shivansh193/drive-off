@@ -64,7 +64,7 @@ def test_low_confidence_exit_goes_to_review_not_charged(fresh):
 
 def test_cloned_plate_different_car_is_held(fresh):
     start = t0()
-    play("sam_in", start)  # blue car
+    play("ana_in", start)  # yellow car
     x = play("clone_out", start + timedelta(hours=2))  # green car, same plate
     assert x["session"]["state"] == "review"
     assert "vehicle_mismatch" in x["session"]["flags"]
@@ -85,9 +85,10 @@ def test_tailgating_pass_detects_both_vehicles(fresh):
     both = [e, e["tailgate_with"]]
     decisions = sorted(x["decision"] for x in both)
     assert decisions == ["auto", "not_enrolled"]
-    ana = next(x for x in both if x["decision"] == "auto")
-    assert "tailgate" in ana["session"]["flags"]
-    assert "tailgating" in ana["reason"]
+    leo = next(x for x in both if x["decision"] == "auto")
+    assert leo["plate"] == "JNP3047"
+    assert "tailgate" in leo["session"]["flags"]
+    assert "tailgating" in leo["reason"]
 
 
 def test_missing_exit_defaults_to_one_day_cap_then_driver_confirms(fresh):
@@ -139,3 +140,11 @@ def test_correction_and_decision_rules():
     assert vision.decide(few, {"KTR4821"}, "LLLDDDD").outcome == "review"
     off = vision.PassRead("KTR4828", 0.99, 6, 6, {"KTR4828": {}}, [])
     assert vision.decide(off, {"KTR4821"}, "LLLDDDD").outcome == "review"  # 1 char from enrolled: never auto
+
+
+def test_vehicle_colour_signal_on_fixture_clips():
+    for clip, colour in [("maya_in", "red"), ("sam_in", "blue"), ("clone_out", "green"), ("ana_in", "yellow")]:
+        frames = demo.clip_frames(clip)
+        r = vision.read_pass(frames, "LLLDDDD")
+        box = next(x for x in r.reads if x.frame == r.best_frame).box
+        assert vision.vehicle_color(frames[r.best_frame], box) == colour, clip

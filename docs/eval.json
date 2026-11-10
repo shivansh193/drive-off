@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-11-10T18:36:05",
+  "seed": 2026,
+  "note": "Rendered, fictional plates only. This measures the pipeline and the safety rules, not a real lot.",
+  "single_frame": {
+    "n": 120,
+    "exact": 0.8666666666666667,
+    "char": 0.9354166666666667,
+    "detected": 0.9666666666666667,
+    "by_condition": {
+      "angle": {
+        "n": 20,
+        "exact": 1.0,
+        "char": 1.0,
+        "detected": 1.0
+      },
+      "blur": {
+        "n": 20,
+        "exact": 0.6,
+        "char": 0.6767857142857142,
+        "detected": 0.8
+      },
+      "confusable": {
+        "n": 20,
+        "exact": 0.65,
+        "char": 0.9428571428571428,
+        "detected": 1.0
+      },
+      "day": {
+        "n": 20,
+        "exact": 1.0,
+        "char": 1.0,
+        "detected": 1.0
+      },
+      "dirty": {
+        "n": 20,
+        "exact": 1.0,
+        "char": 1.0,
+        "detected": 1.0
+      },
+      "night": {
+        "n": 20,
+        "exact": 0.95,
+        "char": 0.9928571428571429,
+        "detected": 1.0
+      }
+    },
+    "calibration": [
+      {
+        "bin": "[0.00, 0.50)",
+        "n": 5,
+        "exact": 0.0
+      },
+      {
+        "bin": "[0.50, 0.80)",
+        "n": 1,
+        "exact": 0.0
+      },
+      {
+        "bin": "[0.80, 0.90)",
+        "n": 1,
+        "exact": 0.0
+      },
+      {
+        "bin": "[0.90, 0.95)",
+        "n": 4,
+        "exact": 0.0
+      },
+      {
+        "bin": "[0.95, 1.00)",
+        "n": 109,
+        "exact": 0.9541284403669725
+      }
+    ]
+  },
+  "passes": {
+    "n": 150,
+    "frames_per_pass": 5,
+    "enrolled": 50,
+    "near_pairs": 10,
+    "min_agree": 3,
+    "min_conf": 0.9,
+    "outcomes": {
+      "review": 67,
+      "auto": 48,
+      "not_enrolled": 33,
+      "no_read": 2
+    },
+    "wrong_person_charges": 0,
+    "auto_precision": 1.0,
+    "auto_rate": 0.32,
+    "review_rate": 0.44666666666666666,
+    "by_condition": {
+      "day": {
+        "auto": 0.23333333333333334,
+        "review": 0.5666666666666667,
+        "wrong": 0
+      },
+      "night": {
+        "auto": 0.4,
+        "review": 0.3,
+        "wrong": 0
+      },
+      "angle": {
+        "auto": 0.4,
+        "review": 0.5,
+        "wrong": 0
+      },
+      "blur": {
+        "auto": 0.06666666666666667,
+        "review": 0.5666666666666667,
+        "wrong": 0
+      },
+      "dirty": {
+        "auto": 0.5,
+        "review": 0.3,
+        "wrong": 0
+      }
+    }
+  },
+  "tests": {
+    "summary": "23 passed, 1 warning in 23.97s (rate-engine property tests incl. caps, grace, free windows, midnight rollover, DST; idempotent duplicate exit; clone, tailgate, missing exit, low-confidence and dispute fixtures)",
+    "ok": true
+  },
+  "limits": [
+    "All images are synthetic renders, not real lot footage. Real-world accuracy will be lower, especially for glare, plate frames, regional formats and mud.",
+    "Plate format is a single US-style pattern (LLLDDDD) per lot.",
+    "Vehicle-colour matching is a coarse signal and is only used to hold or dispute, never to charge.",
+    "Gemini second pass is advisory: it never triggers a charge on its own."
+  ]
+}

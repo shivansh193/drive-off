@@ -27,6 +27,7 @@ DRIVERS = [
     {"name": "Maya (demo)", "plate": "KTR4821", "color": "red"},
     {"name": "Sam (demo)", "plate": "BXD7390", "color": "blue"},
     {"name": "Ana (demo)", "plate": "HLM2056", "color": "yellow"},
+    {"name": "Leo (demo)", "plate": "JNP3047", "color": "white"},
 ]
 
 # id, title, lane, plates+colours, condition, story text
@@ -41,9 +42,9 @@ CLIPS = [
      "Duplicate exit read: idempotent, no double charge"),
     ("sam_out_night", "Sam leaves at night, plate smeared", "exit", [("BXD7390", "blue")], "night_blur",
      "Low confidence: never auto-charged, goes to review"),
-    ("clone_out", "Green car with Sam's plate leaves", "exit", [("BXD7390", "green")], "day",
+    ("clone_out", "Green car with Ana's plate leaves", "exit", [("HLM2056", "green")], "day",
      "Same plate, different car: held as a suspected clone"),
-    ("tailgate_in", "Two cars in one pass", "entry", [("HLM2056", "yellow"), ("RVC5108", "white")], "day",
+    ("tailgate_in", "Two cars in one pass", "entry", [("JNP3047", "white"), ("RVC5108", "grey")], "day",
      "Tailgating: both vehicles detected and flagged"),
     ("ana_out", "Ana leaves", "exit", [("HLM2056", "yellow")], "day", "Exit"),
 ]

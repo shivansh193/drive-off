@@ -243,17 +243,19 @@ def vehicle_color(img: np.ndarray, plate_box: list[int]) -> str:
     region = img[max(0, y1 - 3 * h):max(1, y1 - h // 2), max(0, x1 - w):min(img.shape[1], x2 + w)]
     if region.size == 0:
         return "unknown"
-    hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV).reshape(-1, 3)
-    hch, s, v = np.median(hsv[:, 0]), np.median(hsv[:, 1]), np.median(hsv[:, 2])
-    if v < 50:
-        return "black"
-    if s < 40:
-        return "white" if v > 180 else "grey"
+    hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV).reshape(-1, 3).astype(int)
+    h, s, v = hsv[:, 0], hsv[:, 1], hsv[:, 2]
+    # classify every pixel, then take the most common class (hue is circular: a median of reds can land on cyan)
+    names = np.full(len(h), "unknown", dtype=object)
+    chroma = (s >= 60) & (v >= 50)
     for name, lo, hi in (("red", 0, 8), ("orange", 8, 22), ("yellow", 22, 35), ("green", 35, 85),
                          ("blue", 85, 130), ("purple", 130, 160), ("red", 160, 181)):
-        if lo <= hch < hi:
-            return name
-    return "unknown"
+        names[chroma & (h >= lo) & (h < hi)] = name
+    names[~chroma & (v < 50)] = "black"
+    names[~chroma & (v >= 50) & (v <= 180)] = "grey"
+    names[~chroma & (v > 180)] = "white"
+    vals, counts = np.unique(names, return_counts=True)
+    return str(vals[np.argmax(counts)])
 
 
 def draw(img: np.ndarray, reads: list[FrameRead]) -> np.ndarray:
