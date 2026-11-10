@@ -88,6 +88,37 @@ def setup():
     print("Open this link and approve as the sandbox PERSONAL account:\n ", approve)
 
 
+def enrol():
+    """Vault-with-purchase fallback: $1.00 AUTHORIZE that saves the wallet, then gets voided (no money moves)."""
+    d = call("POST", "/v2/checkout/orders", {
+        "intent": "AUTHORIZE",
+        "purchase_units": [{"reference_id": "enrol", "description": "Drive-Off enrolment check (voided, not charged)",
+                            "amount": {"currency_code": "USD", "value": "1.00"}}],
+        "payment_source": {"paypal": {
+            "attributes": {"vault": {"store_in_vault": "ON_SUCCESS", "usage_type": "MERCHANT",
+                                     "usage_pattern": "IMMEDIATE", "customer_type": "CONSUMER"}},
+            "experience_context": {"shipping_preference": "NO_SHIPPING", "brand_name": "Drive-Off (sandbox)",
+                                   "user_action": "CONTINUE",
+                                   "return_url": f"{APP}/enrol/return", "cancel_url": f"{APP}/enrol/cancel"},
+        }},
+    }, request_id=str(uuid.uuid4()))
+    s = load(); s["enrol_order"] = d["id"]; save(s)
+    print("status:", d["status"])
+    print("Approve as the sandbox PERSONAL buyer:\n ", next(l["href"] for l in d["links"] if l["rel"] == "payer-action"))
+
+
+def enrol_finish():
+    s = load()
+    d = call("POST", f"/v2/checkout/orders/{s['enrol_order']}/authorize", {}, request_id=f"auth-{s['enrol_order']}")
+    v = d["payment_source"]["paypal"]["attributes"]["vault"]
+    print("vault status:", v.get("status"), "vault_id:", v.get("id"), "customer:", v.get("customer", {}).get("id"))
+    auth = d["purchase_units"][0]["payments"]["authorizations"][0]
+    call("POST", f"/v2/payments/authorizations/{auth['id']}/void", None, request_id=f"void-{auth['id']}")
+    print("authorization", auth["id"], "voided")
+    if v.get("id"):
+        s["vault_id"] = v["id"]; s["customer_id"] = v.get("customer", {}).get("id"); save(s)
+
+
 def vault():
     s = load()
     d = call("POST", "/v3/vault/payment-tokens",
@@ -134,6 +165,6 @@ def refund():
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
-    {"setup": setup, "vault": vault, "charge-again": charge_again, "refund": refund}.get(
+    {"setup": setup, "vault": vault, "enrol": enrol, "enrol-finish": enrol_finish, "charge-again": charge_again, "refund": refund}.get(
         cmd, lambda: charge(sys.argv[2] if len(sys.argv) > 2 else "4.50") if cmd == "charge" else print(__doc__)
     )()
