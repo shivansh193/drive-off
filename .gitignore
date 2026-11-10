@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+dist/
+*.db
+*.sqlite
+data/raw/
+data/cache/
+spikes/out/
+kaggle.json
+.DS_Store
