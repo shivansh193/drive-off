@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-10T18:36:05",
+  "generated_at": "2026-11-10T18:41:20",
   "seed": 2026,
   "note": "Rendered, fictional plates only. This measures the pipeline and the safety rules, not a real lot.",
   "single_frame": {
@@ -90,6 +90,35 @@
     "auto_precision": 1.0,
     "auto_rate": 0.32,
     "review_rate": 0.44666666666666666,
+    "by_vehicle_kind": {
+      "customer_with_lookalike_customer": {
+        "review": 28
+      },
+      "customer": {
+        "auto": 48,
+        "review": 12,
+        "no_read": 1,
+        "not_enrolled": 1
+      },
+      "stranger": {
+        "not_enrolled": 30,
+        "no_read": 1
+      },
+      "stranger_1_char_from_customer": {
+        "review": 27,
+        "not_enrolled": 2
+      }
+    },
+    "review_reasons": {
+      "another enrolled plate": 24,
+      "only 1 frame(s) agree": 11,
+      "only 2 frame(s) agree": 7,
+      "read does not fit the lot's plate format LLLDDDD": 4,
+      "read TPX": 2,
+      "read YCU": 2,
+      "read DRC": 1,
+      "read DHJ": 1
+    },
     "by_condition": {
       "day": {
         "auto": 0.23333333333333334,
@@ -119,7 +148,7 @@
     }
   },
   "tests": {
-    "summary": "23 passed, 1 warning in 23.97s (rate-engine property tests incl. caps, grace, free windows, midnight rollover, DST; idempotent duplicate exit; clone, tailgate, missing exit, low-confidence and dispute fixtures)",
+    "summary": "23 passed, 1 warning in 25.85s (rate-engine property tests incl. caps, grace, free windows, midnight rollover, DST; idempotent duplicate exit; clone, tailgate, missing exit, low-confidence and dispute fixtures)",
     "ok": true
   },
   "limits": [

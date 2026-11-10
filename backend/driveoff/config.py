@@ -27,6 +27,8 @@ if PAYPAL_MODE != "mock" and "sandbox" not in PAYPAL_API_BASE:
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:8000").rstrip("/")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
+GEMINI_FALLBACK_MODELS = [m.strip() for m in os.environ.get(
+    "GEMINI_FALLBACK_MODELS", "gemini-flash-lite-latest,gemini-3.5-flash-lite,gemini-flash-latest").split(",") if m.strip()]
 PLATE_HASH_SALT = os.environ.get("PLATE_HASH_SALT", "dev-salt")
 
 # Safety thresholds for automatic charging (see docs/SPIKES.md, spike 3)

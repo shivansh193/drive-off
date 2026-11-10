@@ -42,25 +42,31 @@ def generate_json(prompt: str, images: list[bytes] | None = None, schema_hint: s
     body = {"contents": [{"parts": parts}],
             "generationConfig": {"responseMimeType": "application/json", "temperature": 0}}
     last = None
-    for attempt in range(3):
-        try:
-            t0 = time.time()
-            r = requests.post(URL.format(model=config.GEMINI_MODEL), headers={"x-goog-api-key": config.GEMINI_API_KEY},
-                              json=body, timeout=timeout)
-            if r.status_code in (429, 500, 503) and attempt < 2:
-                last = f"{r.status_code}"
-                time.sleep(2 * (attempt + 1))
-                continue
-            r.raise_for_status()
-            text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-            out = json.loads(text)
-            if isinstance(out, list):
-                out = {"items": out}
-            out["_latency_ms"] = int((time.time() - t0) * 1000)
-            out["_model"] = config.GEMINI_MODEL
-            cache.write_text(json.dumps(out))
-            return out
-        except (requests.RequestException, KeyError, ValueError) as e:
-            last = str(e)
-            time.sleep(2 * (attempt + 1))
+    # Primary model first; on quota exhaustion (429) move to the next model, which has its own quota.
+    models = [config.GEMINI_MODEL] + [m for m in config.GEMINI_FALLBACK_MODELS if m != config.GEMINI_MODEL]
+    for model in models:
+        for attempt in range(2):
+            try:
+                t0 = time.time()
+                r = requests.post(URL.format(model=model), headers={"x-goog-api-key": config.GEMINI_API_KEY},
+                                  json=body, timeout=timeout)
+                if r.status_code == 429:
+                    last = f"{model}: 429 quota"
+                    break  # next model
+                if r.status_code in (500, 503) and attempt == 0:
+                    last = f"{model}: {r.status_code}"
+                    time.sleep(2)
+                    continue
+                r.raise_for_status()
+                text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+                out = json.loads(text)
+                if isinstance(out, list):
+                    out = {"items": out}
+                out["_latency_ms"] = int((time.time() - t0) * 1000)
+                out["_model"] = model
+                cache.write_text(json.dumps(out))
+                return out
+            except (requests.RequestException, KeyError, ValueError) as e:
+                last = f"{model}: {e}"
+                time.sleep(1)
     raise GeminiUnavailable(f"Gemini failed: {last}")

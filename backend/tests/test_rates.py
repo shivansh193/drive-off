@@ -117,3 +117,14 @@ def test_round_trip_and_utc_inputs():
     utc_entry = BASE.astimezone(timezone.utc)
     assert price(r, utc_entry, utc_entry + timedelta(hours=2)).amount_cents == price(
         r, BASE, BASE + timedelta(hours=2)).amount_cents
+
+
+def test_sign_fallback_parser_reads_free_windows_and_grace():
+    from driveoff.signparse import fallback_parse
+    r = fallback_parse("$2.50 per 30 min, max $18 per day. Free 6pm-8am and all day Sunday. No charge under 10 minutes.")
+    assert r["rate_per_hour_cents"] == 500 and r["increment_minutes"] == 30 and r["daily_cap_cents"] == 1800
+    assert r["grace_minutes"] == 10
+    assert {"days": [6], "start": "00:00", "end": "00:00"} in r["free_windows"]
+    assert any(w["start"] == "18:00" and w["end"] == "08:00" for w in r["free_windows"])
+    r2 = fallback_parse("First 30 min free, then $3/hr, max $20/day")
+    assert (r2["free_minutes"], r2["rate_per_hour_cents"], r2["daily_cap_cents"]) == (30, 300, 2000)

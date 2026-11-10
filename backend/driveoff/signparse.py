@@ -60,8 +60,17 @@ def fallback_parse(sign: str) -> dict:
     if m:
         out["grace_minutes"] = int(m.group(1))
     for d, i in DAYS.items():
-        if re.search(rf"free\s+(?:on\s+)?{d}\w*", s) or re.search(rf"{d}\w*\s+free", s):
+        if re.search(rf"free\s+(?:all day\s+|on\s+)?{d}\w*", s) or re.search(rf"{d}\w*\s+free", s) or \
+                re.search(rf"free[^.]*\b(?:all day|on)\s+{d}\w*", s):
             out["free_windows"].append({"days": [i], "start": "00:00", "end": "00:00"})
+
+    def hhmm(h, ap):
+        h = int(h) % 12 + (12 if ap == "pm" else 0)
+        return f"{h:02d}:00"
+    m = re.search(r"free\s+(\d{1,2})\s*(am|pm)\s*(?:-|to|–)\s*(\d{1,2})\s*(am|pm)", s)
+    if m:
+        out["free_windows"].append({"days": list(range(7)), "start": hhmm(m.group(1), m.group(2)),
+                                    "end": hhmm(m.group(3), m.group(4))})
     if not out["rate_per_hour_cents"]:
         out["questions"].append("Couldn't find an hourly rate on the sign.")
     return out

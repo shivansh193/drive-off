@@ -42,6 +42,12 @@ export default function Eval() {
           <p className="small muted" style={{ marginTop: 0 }}>{p.n} simulated passes ({p.frames_per_pass} frames each) against {p.enrolled} enrolled plates, including {p.near_pairs} pairs that differ by one character. Rule: ≥{p.min_agree} agreeing frames, confidence ≥{p.min_conf}, exact enrolled match, no other enrolled plate within one character.</p>
           <table className="simple"><thead><tr><th>Outcome</th><th>Passes</th></tr></thead>
             <tbody>{Object.entries(p.outcomes).map(([k, v]: any) => <tr key={k}><td>{k}</td><td className="num">{v}</td></tr>)}</tbody></table>
+          {p.by_vehicle_kind && <>
+            <h3 style={{ marginTop: 18 }}>Who was in the car</h3>
+            <table className="simple"><thead><tr><th>Vehicle</th><th>Auto-charged</th><th>Review</th><th>Not enrolled</th><th>No read</th></tr></thead>
+              <tbody>{Object.entries(p.by_vehicle_kind).map(([k, v]: any) => <tr key={k}><td>{k.replaceAll("_", " ")}</td><td className="num">{v.auto ?? 0}</td><td className="num">{v.review ?? 0}</td><td className="num">{v.not_enrolled ?? 0}</td><td className="num">{v.no_read ?? 0}</td></tr>)}</tbody></table>
+            <p className="small muted">Customers whose plate is one character from another customer's, and strangers one character from a customer, always go to review. This is deliberate: one misread character must never move money to the wrong person.</p>
+          </>}
           <h3 style={{ marginTop: 18 }}>By condition</h3>
           <table className="simple"><thead><tr><th>Condition</th><th>Auto</th><th>Review</th><th>Wrong auto</th></tr></thead>
             <tbody>{Object.entries(p.by_condition).map(([c, v]: any) => <tr key={c}><td>{c}</td><td className="num">{pct(v.auto)}</td><td className="num">{pct(v.review)}</td><td className="num">{v.wrong}</td></tr>)}</tbody></table>

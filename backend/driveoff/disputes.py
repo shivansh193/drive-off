@@ -20,6 +20,12 @@ from datetime import datetime
 
 from . import config, db, engine, gemini, paypal
 from .rates import RateRule, price
+from zoneinfo import ZoneInfo
+
+
+def _local(iso: str, tz: str) -> str:
+    d = db.parse(iso).astimezone(ZoneInfo(tz))
+    return d.strftime("%b %d, ") + d.strftime("%I:%M %p").lstrip("0")
 
 
 def _img(event_id: str | None, name="frame.jpg") -> bytes | None:
@@ -93,7 +99,7 @@ def open_dispute(session_id: str, reason: str, note: str = "", claimed_exit: dat
                f"{signals['colour']['exit']})" if different_vehicle else "you disputed the exit time")
         verdict.update(outcome="partial_refund", fair_cents=fair.amount_cents, refund_cents=refund_cents,
                        explanation=(f"Because {why}, we checked for other exit reads. A low-confidence exit read at "
-                                    f"{true_exit['at']} matches your car ({true_exit['colour']}"
+                                    f"{_local(true_exit['at'], rule.timezone)} matches your car ({true_exit['colour']}"
                                     f"{', AI read ' + true_exit['llm_plate'] if true_exit.get('llm_plate') else ''}). "
                                     f"Your stay was re-priced to end then: ${fair.amount_cents / 100:.2f}, so "
                                     f"${refund_cents / 100:.2f} goes back to your PayPal."))
