@@ -14,3 +14,4 @@ data/cache/
 spikes/out/
 kaggle.json
 .DS_Store
+data/
