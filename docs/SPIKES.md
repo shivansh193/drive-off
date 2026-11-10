@@ -22,7 +22,19 @@ Status as of 2026-11-10. Each spike records what was run, what happened, and wha
 
 **Script:** `spikes/paypal_spike.py` (`setup` → approve in browser → `vault` → `charge` → `charge-again` → `refund`).
 
-**Result:** _pending sandbox credentials._
+**Result (2026-11-10, US sandbox app, US sandbox business + personal accounts): ✅ works end to end**
+
+| step | call | outcome |
+|---|---|---|
+| Vault without purchase | `POST /v3/vault/setup-tokens` | ❌ 403 `NOT_AUTHORIZED`, although the token has the vault scope. The app lacks billing-agreement approval for this endpoint. |
+| **Enrol** (vault with purchase, fallback) | `POST /v2/checkout/orders`, `intent: AUTHORIZE`, $1.00, `attributes.vault.store_in_vault: ON_SUCCESS`, `usage_type: MERCHANT` → buyer approves once | ✅ `PAYER_ACTION_REQUIRED` → approved |
+| Authorize, read vault id | `POST /v2/checkout/orders/{id}/authorize` | ✅ 201, `vault.status: VAULTED`, vault id + customer id returned |
+| Void the $1 hold | `POST /v2/payments/authorizations/{id}/void` | ✅ 204. The driver is never charged for enrolling |
+| **Merchant-initiated charge, no buyer** | `POST /v2/checkout/orders` `intent: CAPTURE`, `payment_source.paypal.vault_id` | ✅ 201, order `COMPLETED` with capture in one call (~3 s) |
+| **Duplicate exit read** | same request again with the same `PayPal-Request-Id` | ✅ 200, **same order and capture id returned, no second charge** |
+| **Refund** | `POST /v2/payments/captures/{id}/refund` | ✅ 201 `COMPLETED` |
+
+**Decision:** enrolment uses the vault-with-$1-authorization-then-void flow. The driver sees "PayPal will check your account with a $1 hold that's released immediately". The payment-link fallback is not needed.
 
 ## 2. Webhooks arrive and verify
 
