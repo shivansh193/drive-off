@@ -1,0 +1,6 @@
+fast-alpr[onnx]==0.4.0
+requests
+python-dotenv
+pillow
+opencv-python-headless
+numpy

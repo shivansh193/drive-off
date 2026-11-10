@@ -38,7 +38,10 @@ def render_plate(text):
     d = ImageDraw.Draw(img)
     d.rectangle([4, 4, w - 5, h - 5], outline=(20, 40, 110), width=8)
     d.text((w // 2, 40), "DEMO STATE", font=font(34), fill=(20, 40, 110), anchor="mm")
-    d.text((w // 2, 145), f"{text[:3]} {text[3:]}", font=font(130), fill=(15, 15, 20), anchor="mm")
+    label, size = f"{text[:3]} {text[3:]}", 130
+    while size > 40 and d.textlength(label, font=font(size)) > w - 60:  # keep characters inside the plate
+        size -= 4
+    d.text((w // 2, 145), label, font=font(size), fill=(15, 15, 20), anchor="mm")
     d.text((w // 2, 228), "FICTIONAL", font=font(24), fill=(120, 20, 20), anchor="mm")
     return img
 
