@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import config, db, demo, disputes, engine, paypal, signparse, vision
+from . import config, db, demo, disputes, engine, gemini, paypal, signparse, vision
 from .rates import RateRule
 
 app = FastAPI(
@@ -135,7 +135,7 @@ def state(lot_id: str = "lot_main"):
         "kpis": {"occupied": active, "spaces": lot["spaces"], "revenue_cents": revenue,
                  "sessions": len(sessions), "review_open": sum(1 for e in events if e["review_state"] == "open"),
                  "disputes": sum(1 for s in sessions if s["dispute_json"])},
-        "paypal_mode": paypal.mode(), "gemini": bool(config.GEMINI_API_KEY),
+        "paypal_mode": paypal.mode(), "gemini": gemini.backend(),
         "lots": db.q("SELECT id, name FROM lots"),
     }
 
@@ -529,7 +529,7 @@ def plate_event(lot_id: str, body: PlateEvent, x_lot_key: str = Header(..., alia
 
 @app.get("/api/health", tags=["ui"])
 def health():
-    return {"ok": True, "paypal_mode": paypal.mode(), "gemini": bool(config.GEMINI_API_KEY)}
+    return {"ok": True, "paypal_mode": paypal.mode(), "gemini": gemini.backend()}
 
 
 # ------------------------------------------------------------------ frontend

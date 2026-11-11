@@ -84,7 +84,8 @@ class RateRule:
         if self.grace_minutes:
             parts.append(f"{self.grace_minutes} min grace")
         for w in self.free_windows:
-            days = "daily" if len(w.days) == 7 else ",".join("MTWTFSS"[d] for d in w.days)
+            names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            days = "daily" if len(w.days) == 7 else ",".join(names[d] for d in sorted(w.days))
             parts.append(f"free {w.start}-{w.end} ({days})")
         return "; ".join(parts)
 
