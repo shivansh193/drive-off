@@ -90,8 +90,9 @@ def test_staying_longer_never_costs_less(rule, start, minutes, extra):
 def test_never_more_than_posted_hourly_rate_rounded_up(rule, start, minutes):
     """No hidden fees: the charge never exceeds billable time rounded up to the increment at the posted rate."""
     q = price(rule, start, start + timedelta(minutes=minutes))
-    bound = sum(-(-d["billable_minutes"] // rule.increment_minutes) * rule.increment_minutes
-                * rule.rate_per_hour_cents / 60 + 1 for d in q.days)
+    # whole-stay bound: billable time rounded up ONCE to the increment (plus at most 1 cent rounding per day)
+    blocks = -(-q.minutes_billable // rule.increment_minutes)
+    bound = blocks * rule.increment_minutes * rule.rate_per_hour_cents / 60 + len(q.days)
     assert q.amount_cents <= bound
 
 
@@ -128,3 +129,21 @@ def test_sign_fallback_parser_reads_free_windows_and_grace():
     assert any(w["start"] == "18:00" and w["end"] == "08:00" for w in r["free_windows"])
     r2 = fallback_parse("First 30 min free, then $3/hr, max $20/day")
     assert (r2["free_minutes"], r2["rate_per_hour_cents"], r2["daily_cap_cents"]) == (30, 300, 2000)
+
+
+def test_stay_across_midnight_is_not_rounded_up_twice():
+    r = demo_rule()  # $3/hr after 30 free minutes, hourly blocks
+    entry = datetime(2026, 11, 10, 22, 50, tzinfo=LA)
+    q = price(r, entry, entry + timedelta(hours=2))  # 90 billable min straddling midnight
+    assert q.amount_cents == 600  # 2 blocks, same as any other 2h stay
+
+
+@settings(max_examples=300, deadline=None)
+@given(rules, starts, durations)
+def test_without_caps_price_is_total_blocks_regardless_of_midnight(rule, start, minutes):
+    if rule.daily_cap_cents is not None:
+        return
+    q = price(rule, start, start + timedelta(minutes=minutes))
+    blocks = -(-q.minutes_billable // rule.increment_minutes)
+    if minutes > rule.grace_minutes:
+        assert sum(d["raw_cents"] for d in q.days) <= blocks * rule.increment_minutes * rule.rate_per_hour_cents / 60 + len(q.days)

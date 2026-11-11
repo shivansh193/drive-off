@@ -113,8 +113,13 @@ def price(rule: RateRule, entry: datetime, exit: datetime) -> Quote:
     if total <= rule.grace_minutes:
         return Quote(0, total, 0, [], f"{total} min stay is within the {rule.grace_minutes} min grace period")
 
+    # Walk the billable minutes in order. Every `increment_minutes` of billable time is one block, and each block
+    # (including a final partial block) is counted once, on the calendar day it starts. So a stay that crosses
+    # midnight is never rounded up twice; the daily cap is still applied per calendar day.
     per_day: "OrderedDict[str, int]" = OrderedDict()
+    blocks_per_day: "OrderedDict[str, int]" = OrderedDict()
     free_left = rule.free_minutes
+    n = 0
     for i in range(total):
         t = start + timedelta(minutes=i)
         if any(w.contains(t) for w in rule.free_windows):
@@ -124,10 +129,14 @@ def price(rule: RateRule, entry: datetime, exit: datetime) -> Quote:
             continue
         day = t.date().isoformat()
         per_day[day] = per_day.get(day, 0) + 1
+        if n % rule.increment_minutes == 0:
+            blocks_per_day[day] = blocks_per_day.get(day, 0) + 1
+        blocks_per_day.setdefault(day, 0)
+        n += 1
 
     days, amount = [], 0
     for day, mins in per_day.items():
-        blocks = math.ceil(mins / rule.increment_minutes)
+        blocks = blocks_per_day.get(day, 0)
         raw = (blocks * rule.increment_minutes * rule.rate_per_hour_cents + 59) // 60  # round half-cent up
         capped = raw if rule.daily_cap_cents is None else min(raw, rule.daily_cap_cents)
         days.append({"date": day, "billable_minutes": mins, "raw_cents": raw, "charged_cents": capped,
